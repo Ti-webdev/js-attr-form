@@ -1,0 +1,15 @@
+Fallback for HTML5 attribute "form"
+
+Usage:
+<script src="jquery.js"></script>
+<script src="html5-attr-form-fallback.js"></script>
+
+<form id="my-form">
+	FN: <input name="fn" value="">
+</form>
+
+<!-- ... -->
+
+<input type="hidden" form="my-form" name="data" value="Lorem ipsum">
+<input type="submit" form="my-form" value="Send my-form!">
+
