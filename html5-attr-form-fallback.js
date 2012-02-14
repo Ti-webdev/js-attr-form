@@ -60,10 +60,10 @@
 	$(document).delegate('form', 'submit', function(e, button) {
 		var tmpElements = $()
 		if (this.id) {
-			// для именованных элементов и этой формы
+			// ищем именованные элементы
 			$(':enabled[name][form="'+this.id+'"]:not(:submit,:reset),fieldset[form="'+this.id+'"] :enabled[name]:not([form])')
 			.not('(:checkbox,:radio):not(:checked)')
-			.add(button || $())
+			.add(button || $()) // + кнопка по которой шелкнули
 			.each(function() {
 				var element
 				element = $('<input type="hidden">')
