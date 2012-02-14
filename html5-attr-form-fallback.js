@@ -1,15 +1,13 @@
 ;(function() {
-	var REMOVE_HIDDEN_AFTER_SUMIT_TIMEOUT = 50
+	var SUBMIT_TIMEOUT = 50
 
 	function isSupportFormAttribute() {
 		try {
-			var input
-			input = document.createElement('input')
+			var input = document.createElement('input')
 			// аттрибут form прикрепляет элемент к фомре с таким id="custom-id"
 			input.setAttribute('form', 'custom-id')
 
-			var form
-			form = document.createElement('form')
+			var form = document.createElement('form')
 			form.appendChild(input)
 
 			// если параметр form совпадает с формой в которой элемент находится
@@ -18,7 +16,7 @@
 			return support
 		}
 		catch(e) {
-			window.console && console.log(e)
+			if (window.console) console.log(e)
 
 			// при любой ошибке считаем что аттрибут не поддерживется
 			return false
@@ -28,20 +26,30 @@
 
 	if (isSupportFormAttribute()) return
 
+
 	var $ = jQuery
-	// отправляем соотв. форму
-	$(document).delegate('button[type="submit"][form],input[type="submit"][form]', 'click', function() {
-		$('#'+$(this).attr('form')).submit()
+
+
+	// отправка соотв. формы
+	$(document).delegate(':submit:enabled[form]', 'click', function() {
+		$('#'+$(this).attr('form')).trigger('submit', [this])
+		return false
+	})
+
+	// сброс
+	$(document).delegate(':reset:enabled[form]', 'click', function() {
+		$('#'+$(this).attr('form')).each (function(){
+			this.reset()
+		})
 		return false
 	})
 
 	// при отправке формы прикрепляем скрытые поля
-	$(document).delegate('form', 'submit', function() {
+	$(document).delegate('form', 'submit', function(e, button) {
+		var tmpElements = $()
 		if (this.id) {
-			var elements = $()
-
-			// для всех именованных элементов и id этой формы
-			$('*[name][form="'+this.id+'"]').each(function() {
+			// для именованных элементов и этой формы
+			$(':enabled[name][form="'+this.id+'"]:not(:submit):not(:reset)').add(button || $()).each(function() {
 				var element
 				element = $('<input type="hidden">')
 				element.prop({
@@ -49,14 +57,25 @@
 					value: this.value
 				})
 
-				elements = elements.add(element)
+				tmpElements = tmpElements.add(element)
 			})
-			$(this).append(elements)
+			$(this).append(tmpElements)
+		}
 
-			// через таймаут удалим созданные скрытые элементы
+		// элементы из другой формы
+		var foreignElements = $(this).find('*[name][form'+(this.id ? '!="'+this.id+'"' : '')+']:enabled')
+
+		// выключаем
+		foreignElements.prop('disabled', true)
+
+		if (foreignElements.length || tmpElements.length) {
 			setTimeout(function() {
-				elements.remove()
-			}, REMOVE_HIDDEN_AFTER_SUMIT_TIMEOUT)
+				// удалим созданные скрытые элементы
+				tmpElements.remove()
+
+				// включаем обратно
+				foreignElements.prop('disabled', false)
+			}, SUBMIT_TIMEOUT)
 		}
 	})
 })()
