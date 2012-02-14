@@ -35,10 +35,22 @@
 		$('#'+$(this).attr('form')).trigger('submit', [this])
 		return false
 	})
+	$(document).delegate('fieldset[form] :submit:enabled', 'click', function() {
+		var id = $(this).parent('fieldset[form]').attr('form')
+		$('#'+id).trigger('submit', [this])
+		return false
+	})
 
 	// сброс
 	$(document).delegate(':reset:enabled[form]', 'click', function() {
-		$('#'+$(this).attr('form')).each (function(){
+		$('#'+$(this).attr('form')).each(function(){
+			this.reset()
+		})
+		return false
+	})
+	$(document).delegate('fieldset[form] :reset:enabled', 'click', function() {
+		var id = $(this).parent('fieldset[form]').attr('form')
+		$('#'+id).each(function(){
 			this.reset()
 		})
 		return false
@@ -49,7 +61,10 @@
 		var tmpElements = $()
 		if (this.id) {
 			// для именованных элементов и этой формы
-			$(':enabled[name][form="'+this.id+'"]:not(:submit,:reset),fieldset[form="'+this.id+'"] :enabled[name]:not([form])').add(button || $()).each(function() {
+			$(':enabled[name][form="'+this.id+'"]:not(:submit,:reset),fieldset[form="'+this.id+'"] :enabled[name]:not([form])')
+			.not('(:checkbox,:radio):not(:checked)')
+			.add(button || $())
+			.each(function() {
 				var element
 				element = $('<input type="hidden">')
 				element.prop({
